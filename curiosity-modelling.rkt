@@ -72,10 +72,16 @@ pred canMove[pre: Board, post: Board] {
         p.clr = pre.toMove
         pre.places.p != post.places.p
         not(post.places.p in pre.places.Piece)
-        (p.clr = Black and p = King) => {
+        (p = King) => {
             not(post.places.p in (kingMoves[post,King - p] + knightMoves[post,Knight]))
         }
+        (p = King) => (post.places.p in kingMoves[pre,p])
+        (p = Knight) => (post.places.p in knightMoves[pre,p])
+        all other : Piece - p {
+            pre.places.other = post.places.other
+        }
     }
+   
          
             
 }
