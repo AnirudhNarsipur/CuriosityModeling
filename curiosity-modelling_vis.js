@@ -2,6 +2,9 @@
 // Jiahua Chen and Anirudh Narsipur
 // Feb 22, 2021
 
+// INSTRUCTIONS: Since this script loads external elements, "Execute" may need to be run twice
+// to guarantee that visualization is showing properly.
+
 // Setup for importing necessary scripts/plugins
 function loadSources() {
   var styleSheet = document.createElement('link');
@@ -22,8 +25,6 @@ function loadSources() {
   chessboardImport.setAttribute('integrity','sha384-8Vi8VHwn3vjQ9eUHUxex3JSN/NFqUg3QbPyX8kWyb93+8AC/pPWTzj+nHtbC5bxD');
   chessboardImport.setAttribute('crossorigin','anonymous');
   document.head.appendChild(chessboardImport);
-
-  setTimeout(loadChessboard, 5000); // Delay for the sake of loading scripts before utilizing them.
 }
 
 // Start of visualization code
@@ -134,4 +135,8 @@ function loadChessboard() {
 
 div.innerHTML = '';
 div.style.overflow = 'scroll';
+if (!document.head.innerHTML.includes('chessboardjs@1.0.0')) {
+  alert('Since this script loads external elements, "Execute" may need to be run twice or thrice (!!) to guarantee that visualization is showing properly.');
+}
 loadSources();
+loadChessboard();
