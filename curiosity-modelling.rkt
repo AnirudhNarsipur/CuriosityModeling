@@ -20,7 +20,7 @@ abstract sig Rank {
 }
 one sig R1, R2, R3, R4, R5, R6, R7, R8 extends Rank {}
 
-abstract sig Piece { clr : one Color }
+abstract sig Piece {clr : one Color}
 
 sig King extends Piece {}
 sig Knight extends Piece {}
@@ -49,10 +49,14 @@ fun kingMoves[b: Board, p: King]: set File -> Rank {
     - (getFile[b, p]->getRank[b, p])
 }
 
-fun BlackKing: set King {
-    some k : King {
-        k.clr = Black
-    }
+
+fun knightMoves[b: Board, p: Knight]: set File -> Rank {
+    -- One square to left/right and two to above/below
+    (getFile[b, p].left + getFile[b, p].right) -- File
+    ->(getRank[b, p].above.above + getRank[b, p].below.below) -- Rank
+    -- One square to above/below and two to left/right
+    + (getFile[b, p].left.left + getFile[b, p].right.right) -- File
+    ->(getRank[b, p].above + getRank[b, p].below) -- Rank
 }
 pred initBoard[b: Board] {
    one k : King {
@@ -64,7 +68,16 @@ pred initBoard[b: Board] {
 }
 
 pred canMove[pre: Board, post: Board] {
-    1 = 1
+    one p : Piece | {
+        p.clr = pre.toMove
+        pre.places.p != post.places.p
+        not(post.places.p in pre.places.Piece)
+        (p.clr = Black and p = King) => {
+            not(post.places.p in (kingMoves[post,King - p] + knightMoves[post,Knight]))
+        }
+    }
+         
+            
 }
 
 pred finalBoard[b: Board] {
@@ -126,14 +139,6 @@ pred validBoard {
 
 
 
-fun knightMoves[b: Board, p: Knight]: set File -> Rank {
-    -- One square to left/right and two to above/below
-    (getFile[b, p].left + getFile[b, p].right) -- File
-    ->(getRank[b, p].above.above + getRank[b, p].below.below) -- Rank
-    -- One square to above/below and two to left/right
-    + (getFile[b, p].left.left + getFile[b, p].right.right) -- File
-    ->(getRank[b, p].above + getRank[b, p].below) -- Rank
-}
 /*
 fun bishopMoves[b: Board, bi: Bishop]: set File -> Rank {
     none
