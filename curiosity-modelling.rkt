@@ -20,7 +20,7 @@ abstract sig Rank {
 }
 one sig R1, R2, R3, R4, R5, R6, R7, R8 extends Rank {}
 
-abstract sig Piece {clr : one Color}
+abstract sig Piece { clr : one Color }
 
 sig King extends Piece {}
 sig Knight extends Piece {}
