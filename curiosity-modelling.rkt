@@ -24,7 +24,7 @@ abstract sig Piece {}
 
 sig King extends Piece {}
 sig Knight extends Piece {}
-sig Bishop extends Piece {}
+--sig Bishop extends Piece {}
 
 sig Board {
     next: lone Board,
@@ -33,9 +33,24 @@ sig Board {
 }
 
 -------- Statefulness --------
+fun getFile[b: Board, p: Piece]: File {
+    -- Returns the File of Piece p on Board b
+    (b.places.p[Color]).Rank
+}
+
+fun getRank[b: Board, p: Piece]: Rank {
+    -- Returns the Rank of Piece p on Board b
+    b.places.p[Color][File]
+}
+
+fun kingMoves[b: Board, p: King]: set File -> Rank {
+    (getFile[b, p] + getFile[b, p].left + getFile[b, p].right) -- File
+    ->(getRank[b, p] + (getRank[b, p]).above + (getRank[b, p]).below) -- Rank
+    - (getFile[b, p]->getRank[b, p])
+}
 
 pred initBoard[b: Board] {
-    1 = 1
+    -- not(getFile[b,(b.places[Black]).King]->getRank[b,(b.places[Black]).King]) in kingMoves[b,(b.places[White]).King]
 }
 
 pred canMove[pre: Board, post: Board] {
@@ -93,26 +108,12 @@ pred validBoard {
             -- Only one piece on each square
             lone b.places[Color][f][r]
         }
-        kingMoves[b.places[White].King
+      
     }
     
 }
 
-fun getFile[b: Board, p: Piece]: File {
-    -- Returns the File of Piece p on Board b
-    (b.places.p[Color]).Rank
-}
 
-fun getRank[b: Board, p: Piece]: Rank {
-    -- Returns the Rank of Piece p on Board b
-    b.places.p[Color][File]
-}
-
-fun kingMoves[b: Board, p: King]: set File -> Rank {
-    (getFile[b, p] + getFile[b, p].left + getFile[b, p].right) -- File
-    ->(getRank[b, p] + (getRank[b, p]).above + (getRank[b, p]).below) -- Rank
-    - (getFile[b, p]->getRank[b, p])
-}
 
 fun knightMoves[b: Board, p: Knight]: set File -> Rank {
     -- One square to left/right and two to above/below
@@ -122,17 +123,18 @@ fun knightMoves[b: Board, p: Knight]: set File -> Rank {
     + (getFile[b, p].left.left + getFile[b, p].right.right) -- File
     ->(getRank[b, p].above + getRank[b, p].below) -- Rank
 }
-
+/*
 fun bishopMoves[b: Board, bi: Bishop]: set File -> Rank {
     none
 }
+*/
 
 run {
     validBoard
     transitionBoards
     all b: Board {
         -- White is the side with Bishop and Knight pair
-        one (b.places[White]).Knight
-        one (b.places[White]).Bishop
+         #(b.places[White]).Knight = 2
+        
     }
-} for exactly 8 File, exactly 8 Rank, exactly 5 Board, exactly 2 King, exactly 1 Knight, exactly 1 Bishop, 5 Int
+} for exactly 8 File, exactly 8 Rank, exactly 5 Board, exactly 2 King, exactly 2 Knight, 5 Int
