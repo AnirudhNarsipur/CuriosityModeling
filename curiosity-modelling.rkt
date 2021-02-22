@@ -20,7 +20,7 @@ abstract sig Rank {
 }
 one sig R1, R2, R3, R4, R5, R6, R7, R8 extends Rank {}
 
-abstract sig Piece {}
+abstract sig Piece {clr : one Color}
 
 sig King extends Piece {}
 sig Knight extends Piece {}
@@ -28,19 +28,19 @@ sig Knight extends Piece {}
 
 sig Board {
     next: lone Board,
-    places: set Color -> File -> Rank -> Piece,
+    places: set File -> Rank -> Piece,
     toMove: one Color
 }
 
 -------- Statefulness --------
 fun getFile[b: Board, p: Piece]: File {
     -- Returns the File of Piece p on Board b
-    (b.places.p[Color]).Rank
+    (b.places.p).Rank
 }
 
 fun getRank[b: Board, p: Piece]: Rank {
     -- Returns the Rank of Piece p on Board b
-    b.places.p[Color][File]
+    b.places.p[File]
 }
 
 fun kingMoves[b: Board, p: King]: set File -> Rank {
@@ -49,8 +49,9 @@ fun kingMoves[b: Board, p: King]: set File -> Rank {
     - (getFile[b, p]->getRank[b, p])
 }
 
+
 pred initBoard[b: Board] {
-    -- not(getFile[b,(b.places[Black]).King]->getRank[b,(b.places[Black]).King]) in kingMoves[b,(b.places[White]).King]
+   
 }
 
 pred canMove[pre: Board, post: Board] {
@@ -97,16 +98,17 @@ pred validBoard {
     right = A->B + B->C + C->D + D->E + E->F + F->G + G->H
     below = R8->R7 + R7->R6 + R6->R5 + R5->R4 + R4->R3 + R3->R2 + R2->R1
     above = R1->R2 + R2->R3 + R3->R4 + R4->R5 + R5->R6 + R6->R7 + R7->R8
+    no k : King, y : King - k {
+        k.clr = y.clr
+    }
     all b: Board {
-        one (b.places[White]).King -- One White king
-        one (b.places[Black]).King -- One Black king
         all p: Piece {
             -- Each piece has a unique location on the board
             one (b.places).p
         }
         all f: File, r: Rank | {
             -- Only one piece on each square
-            lone b.places[Color][f][r]
+            lone b.places[f][r]
         }
       
     }
@@ -134,7 +136,7 @@ run {
     transitionBoards
     all b: Board {
         -- White is the side with Bishop and Knight pair
-         #(b.places[White]).Knight = 2
+          Knight.clr = White
         
     }
-} for exactly 8 File, exactly 8 Rank, exactly 5 Board, exactly 2 King, exactly 2 Knight, 5 Int
+} for exactly 8 File, exactly 8 Rank, exactly 5 Board, exactly 2 King, exactly 2 Knight,exactly 2 Color, 5 Int
