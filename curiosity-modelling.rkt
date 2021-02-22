@@ -80,8 +80,28 @@ pred canMove[pre: Board, post: Board] {
             
 }
 
+pred BlackKingCanMove[b : Board] {
+    one p : King | {
+        p.clr = Black
+        some(kingMoves[b,p]  - (kingMoves[b,King - p] + knightMoves[b,Knight]))
+    }
+}
+pred Check[b : Board] {
+     one p : King | {
+        p.clr = Black
+        some(kingMoves[b,p]  & (kingMoves[b,King - p] + knightMoves[b,Knight]))
+    }
+}
+pred CheckMate[b : Board] {
+    Check[b]
+    not(BlackKingCanMove[b])
+}
+pred Stalemate[b : Board]{
+    not(Check[b])
+    not(BlackKingCanMove[b])
+}
 pred finalBoard[b: Board] {
-    1 = 1
+   Check[b] or Stalemate[b]
 }
 
 pred transitionBoards {
