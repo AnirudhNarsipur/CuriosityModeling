@@ -23,7 +23,7 @@ function loadSources() {
   chessboardImport.setAttribute('crossorigin','anonymous');
   document.head.appendChild(chessboardImport);
 
-  setTimeout(loadChessboard, 1000); // Delay for the sake of loading scripts before utilizing them.
+  setTimeout(loadChessboard, 5000); // Delay for the sake of loading scripts before utilizing them.
 }
 
 // Start of visualization code
