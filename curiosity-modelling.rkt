@@ -49,9 +49,18 @@ fun kingMoves[b: Board, p: King]: set File -> Rank {
     - (getFile[b, p]->getRank[b, p])
 }
 
-
+fun BlackKing: set King {
+    some k : King {
+        k.clr = Black
+    }
+}
 pred initBoard[b: Board] {
-   
+   one k : King {
+       k.clr = Black
+       all p : Piece - k {
+           no(b.places.p & kingMoves[b,k])
+       }
+   }
 }
 
 pred canMove[pre: Board, post: Board] {
