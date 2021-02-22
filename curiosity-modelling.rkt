@@ -266,7 +266,7 @@ run {
         Knight.clr = White
     }
     some b: Board, c: Color | Checkmate[b, c] // Comment out to reach Stalemate ending. This forces a search for checkmate sequences.
-} for exactly 8 File, exactly 8 Rank, exactly 2 Board, exactly 2 King, exactly 2 Knight, exactly 2 Color, 5 Int
+} for exactly 8 File, exactly 8 Rank, exactly 5 Board, exactly 2 King, exactly 2 Knight, exactly 2 Color, 5 Int
 
 -------- Tests (requires 5 Int bitwidth from run) --------
 
