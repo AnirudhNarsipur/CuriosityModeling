@@ -38,29 +38,42 @@ fun getFile[b: Board, p: Piece]: File {
     -- Returns the File of Piece p on Board b
     (b.places.p).Rank
 }
+/*
+places = Board0->A0->R10->Knight0
+getFile[Board0,Knight0] = A0
+*/
 
--- TODO: Testing
 
 fun getRank[b: Board, p: Piece]: Rank {
     -- Returns the Rank of Piece p on Board b
     b.places.p[File]
 }
+/*
+places = Board0->A0->R10->Knight0
+getRank[Board0,Knight0] = R10
+*/
 
--- TODO: Testing
 
 fun getPos[b: Board, p: Piece]: File->Rank {
     b.places.p
 }
 
--- TODO: Testing
+/*
+places = Board0->A0->R10->Knight0
+getRank[Board0,Knight0] = A0->R10
 
+*/
 fun kingMoves[b: Board, p: King]: set File -> Rank {
     (getFile[b, p] + getFile[b, p].left + getFile[b, p].right) -- File
     ->(getRank[b, p] + (getRank[b, p]).above + (getRank[b, p]).below) -- Rank
     - (getFile[b, p]->getRank[b, p])
 }
+/*
+places =((Board0 A0 R80 King0) (Board0 B0 R20 Knight1) (Board0 B0 R60 King1) (Board0 D0 R70 Knight0))
+kingMoves  = ((A0 R50) (A0 R70) (B0 R50) (B0 R60) (B0 R70))
 
--- TODO: Testing
+
+*/
 
 fun knightMoves[b: Board, p: Knight]: set File -> Rank {
     -- One square to left/right and two to above/below
@@ -71,14 +84,16 @@ fun knightMoves[b: Board, p: Knight]: set File -> Rank {
     ->(getRank[b, p].above + getRank[b, p].below) -- Rank
 }
 
--- TODO: Testing
+/*
+places =((Board0 A0 R80 King0) (Board0 B0 R20 Knight1) (Board0 B0 R60 King1) (Board0 D0 R70 Knight0))
+knightMoves[Board0,Knight0] = ((B0 R60) (B0 R80) (C0 R50) (E0 R50) (F0 R60) (F0 R80))
+*/
 
 -------- Statefulness --------
 pred initBoard[b: Board] {
-    1 = 1
+   not(Checkmate[b,Black]) and
+   not(Stalemate[b,Black])
 }
-
--- TODO: Testing
 
 pred canMove[pre: Board, post: Board] {
     one p: Piece | {
@@ -308,4 +323,29 @@ run {
 example CanCheckmate is Checkmate[Board, Black] for validCheckmate
 
 example CanStalemate is Stalemate[Board,Black] for isStalemate
+
+test expect {
+    only1Move: {(validBoard and transitionBoards) => {some x,y : Board | { canMove[x,y] => one(y.places - x.places) }}} for exactly 8 File, exactly 8 Rank, exactly 5 Board is theorem
+    onlysinglenextBoard: {(validBoard and transitionBoards) => {next.~next in iden} }  for exactly 8 File, exactly 8 Rank, exactly 5 Board, exactly 2 King, exactly 2 Knight, exactly 2 Color, 5 Int is theorem
+    eachPieceHasOnlyPosition: {(validBoard and transitionBoards) => {all b : Board | { all p : Piece { one(b.places.p)}}}}  for exactly 8 File, exactly 8 Rank, exactly 5 Board, exactly 2 King, exactly 2 Knight, exactly 2 Color, 5 Int is theorem
+    onlyPieceOnEachSquare: {(validBoard and transitionBoards) => {all b : Board | {  all f: File, r: Rank | {
+            -- Only one piece on each square
+            lone b.places[f][r]
+        }   }}}  for exactly 8 File, exactly 8 Rank, exactly 5 Board, exactly 2 King, exactly 2 Knight, exactly 2 Color, 5 Int is theorem
+     --   endsWithCheckOrStalemateForBlack: {(validBoard and transitionBoards) => {one b : Board {  some c : Color { Checkmate[b, c] or Stalemate[b, c] }}}}  for exactly 8 File, exactly 8 Rank, exactly 5 Board, exactly 2 King, exactly 2 Knight, exactly 2 Color, 5 Int is theorem
+ /*   startingPositionDoesNotHaveCheckmate: {(validBoard and transitionBoards) => { one b : Board{
+        some c : Color { 
+        initBoard[b]
+        not(Checkmate[b,c]) and
+        not(Stalemate[b,c])}}}} for exactly 8 File, exactly 8 Rank, exactly 5 Board, exactly 2 King, exactly 2 Knight, exactly 2 Color, 5 Int is theorem */
+    MoveHastToOccur: {some x,y : Board { canMove[x,y] and x.places = y.places}}for exactly 8 File, exactly 8 Rank, exactly 5 Board, exactly 2 King, exactly 2 Knight, exactly 2 Color, 5 Int is unsat
+
+   MoveOnlyToValidLocWhenTurn: {all x,y : Board { canMove[x,y] =>
+  { one p : Piece {
+       p.clr = x.toMove
+       x.places.p != y.places.p
+       (p = Knight) => y.places.p in knightMoves[x,p]
+       (p = King) => y.places.p in kingMoves[x,p]
+   }}}} for exactly 8 File, exactly 8 Rank, exactly 5 Board, exactly 2 King, exactly 2 Knight, exactly 2 Color, 5 Int is theorem
+}
 
