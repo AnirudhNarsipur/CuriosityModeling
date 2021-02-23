@@ -189,6 +189,42 @@ pred Stalemate[b: Board, c: Color] {
     not KingCanMove[b, c]
 }
 
+inst isStalemate {
+        Piece = King0 + King1 + Knight0 + Knight1
+    King = King0 + King1
+    Knight = Knight0 + Knight1
+    Board = Board0
+    Rank = R10 + R20 + R30 + R40 + R50 + R60 + R70 + R80
+    R1 = R10
+    R2 = R20
+    R3 = R30
+    R4 = R40
+    R5 = R50
+    R6 = R60
+    R7 = R70
+    R8 = R80
+    File = A0 + B0 + C0 + D0 + E0 + F0 + G0 + H0
+    A = A0
+    B = B0
+    C = C0
+    D = D0
+    E = E0
+    F = F0
+    G = G0
+    H = H0
+    Color = White0 + Black0
+    White = White0
+    Black = Black0
+    below = R20->R10 + R30->R20 + R40->R30 + R50->R40 + R60->R50 + R70->R60 + R80->R70
+    right = A0->B0 + B0->C0 + C0->D0 + D0->E0 + E0->F0 + F0->G0 + G0->H0
+    above = R10->R20 + R20->R30 + R30->R40 + R40->R50 + R50->R60 + R60->R70 + R70->R80
+    left = B0->A0 + C0->B0 + D0->C0 + E0->D0 + F0->E0 + G0->F0 + H0->G0
+    places =  Board0->A0->R50->Knight1 + Board0->A0->R80->King0 + Board0->C0->R40->King1 + Board0->C0->R60->Knight0 
+    clr = King0->Black0 + King1->White0 + Knight0->White0 + Knight1->White0
+    otherColor = White0->Black0 + Black0->White0
+    toMove = Board0->Black0
+}
+
 pred finalBoard[b: Board] {
     -- A color is in checkmate
     some c: Color {
@@ -265,9 +301,11 @@ run {
         -- White is the side with Knight pair
         Knight.clr = White
     }
-    some b: Board, c: Color | Checkmate[b, c] // Comment out to reach Stalemate ending. This forces a search for checkmate sequences.
+ --   some b: Board, c: Color | Checkmate[b, c] // Comment out to reach Stalemate ending. This forces a search for checkmate sequences.
 } for exactly 8 File, exactly 8 Rank, exactly 5 Board, exactly 2 King, exactly 2 Knight, exactly 2 Color, 5 Int
 
 -------- Tests (requires 5 Int bitwidth from run) --------
-
 example CanCheckmate is Checkmate[Board, Black] for validCheckmate
+
+example CanStalemate is Stalemate[Board,Black] for isStalemate
+
