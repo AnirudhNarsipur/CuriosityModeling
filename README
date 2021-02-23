@@ -1,0 +1,57 @@
+# Curiosity Modeling
+
+## The Two Knight Endgame
+While chess is commonly regarded as an extremely hard problem (for both humans and computers), its endgames are surprisingly much simpler and in many cases, solved.
+
+For example, it is proven that a King and a Rook against a King is a forced checkmate. So are Bishop/Bishop and Bishop/Knight combinations against a lone King. However, a white king and two knights cannot force a checkmate against a lone black king with perfect play in most situations. This is what we have modeled within our project — the 2 knight chess endgame.
+
+Our model generates legal move sequences for both white and black sides (ie no side moves into check, a check must be responded to, etc.), terminating in a checkmate or stalemate for black. Our model checker allows custom states (which allow the evaluation of a position and whether black has forced draw). Specifying within `run` that `some b: Board | Checkmate[b, Color]` can specify that we want the found instance to have a checkmate sequence, by force or by black's blunder.
+
+## Model Design Choices
+Initially, we had higher expectations to model more pieces (Bishops, Rooks, etc), however we decided to solely model Knights for two reasons: Knights can jump to any valid empty square (whereas Bishops would require checking if an intermediate position to its destination is being occupied), and that Knights provide an interesting endgame---one where the advantageous side does not have a guaranteed win.
+
+Our `run` statement searches for a valid sequence of moves (like those you'd encounter in a chess tournament) that results in the termination of a chess game. This is either a stalemate or checkmate. For simplicity (and consistency), we predefine White to be the winning side (with 2 knights) and Black has a sole king. This can easily be changed within our `run` statement, however. There is also an optional line that forces a position terminating in either a checkmate or stalemate (one or the other).
+
+The output, when visualized (a note that 'Execute' in the scripts tab needs to be run multiple times since assets need to be imported), gives a list of board states that follow one another. The last board should be an ending position with a checkmate or stalemate (depending on the options specified).
+
+While options are strictly defined to a certain number of pieces, these can easily be changed to experiment with various concepts (and endgame theory). For example, exactly 1 Knight and 2 Kings can never checkmate. This is a force draw by insufficient material. Or, a variation could be made with more than 2 Knights (perhaps a side promoted pawns into additional knights).
+
+Note that our spec produces _an_ instance. This does not have to be a force-checkmate sequence, nor does this assume perfect play. By iterating through all the possible instances (series of boards) Forge could produce (a long and complex process that doesn't terminate), we could theoretically produce an endgame database of every possible move and their evaluation. With the correct bounds on the number of moves, the number of states is finite but albeit very large.
+
+## Sigs and Preds
+We have abstract sigs representing coordinates (Files and Ranks), Colors (White and Black), and Pieces (King and Knight). The left, right, above and below relations give adjacencies between files and ranks. This is easily extendable to chess variants with smaller boards or irregularly sized boards (as well as more than 2 players, such as a 4 player variant).
+
+An explanation and justificatiion of each sig and relation is given below:
+
+`Color`: The side each piece is on, and the player to move. This is an abstract sig with `White` and `Black` with the intention that more players could be added. `otherColor` allows us to generalize on `White` and `Black` without explicitly defining cases for each side (since it is symmetrical).
+
+`File`: Files of the chessboard. Allows grid notation. `left` and `right` relations allow for relations later that produce a relative position on the board.
+
+`Rank`: Ranks of the chessboard. `above` and `below` similar to `left` and `right`.
+
+`Piece`: A piece has a color, and can be either a `King` or `Knight`.
+
+`Board`: A board is a state of the game. It has a next state, places which gives the coordinates of each piece, and the color that is to move next. This allows us to check that colors move in alternating order only.
+
+`getFile`, `getRank`, `getPos` return coordinate elements of a piece at some state (Board b).
+
+`kingMoves` and `knightMoves` gives the legal moves a King and Knight can make on some Board b. This allows us to check if every move (pre and post) consists of a legal move (the piece's new position has to be in their previous position's legal moves). Additionally, it allows us to check if a King is in check if it is contained in the opposing Knight's knightMoves.
+
+`initBoard` gives conditions of the initial board. This can be manually defined if we want some certain initial position (i.e. checking if some initial position leading to checkmate in 5 moves is possible). Its default evaluates to true (since legal positions are being checked all the time using `validBoard` already).
+
+`canMove` ensures that a Board transition is legal.
+
+`KingCanMove` checks if for a certain color on a certain board, all `kingMoves` aren't contained in valid `kingMoves` or `knightMoves` of the opposing color (since a King cannot move into check).
+
+`Check` checks if for a certain color on a certain board, the king is in check.
+
+If the color needs to move, the king is in check (`Check`) and the king cannot move (`not KingCanMove`), then it is a `Checkmate`. If the king is not in check but cannot move, it is a `Stalemate`.
+
+The `finalBoard` should be either Stalemate or Checkmate.
+
+`transitionBoards` ensures compliance with all stateful predicates. `validBoard` ensures all Boards are valid (adjacencies are correct, each color has a king, all pieces have unique locations and have locations, and the previous move did not move into check).
+
+We currently `run` on White Knights and Black gets checkmated or stalemated, although this can be configured.
+
+## Notes
+Compiled and run using Forge 0.12.1. Import `_vis.js` to use in scripts as visualizer. 
